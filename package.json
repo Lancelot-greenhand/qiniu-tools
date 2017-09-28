@@ -1,0 +1,22 @@
+{
+  "name": "qiniu-tools",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lancelot-greenhand/qiniu-tools.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Lancelot-greenhand/qiniu-tools/issues"
+  },
+  "homepage": "https://github.com/Lancelot-greenhand/qiniu-tools#readme",
+  "dependencies": {
+    "qiniu": "^7.0.8"
+  }
+}
