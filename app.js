@@ -1,31 +1,16 @@
 const fs = require('fs')
-const path = require('path')
 const qiniu = require('qiniu')
-const root = 'e:/testdocs'
 var accessKey = 'UFBLTy8tc_f_L0KxkuUuQTayBMl73SDpo80ZwYWe';
 var secretKey = '8TWK6szB3_Bln3nsasl0HABei12a4UMvy5CyI8tf';
 var mac = new qiniu.auth.digest.Mac(accessKey, secretKey);
 var bucket = 'limg'
-var options = {
-    scope: bucket,
-};
-var putPolicy = new qiniu.rs.PutPolicy(options);
-var uploadToken = putPolicy.uploadToken(mac);
 
 var config = new qiniu.conf.Config();
 // 空间对应的机房
 config.zone = qiniu.zone.Zone_z0;
 
-var formUploader = new qiniu.form_up.FormUploader(config);
-var putExtra = new qiniu.form_up.PutExtra();
 
 var bucketManager = new qiniu.rs.BucketManager(mac, config);
-
-
-//同步root文件夹的文件
-function startSync() {
-    walkDir(root, uploadFile)
-}
 
 function deleteFile(item) {
     var key = item
@@ -103,53 +88,10 @@ function getItems({ prefix, limit }, callback) {
 }
 
 
-class RequestControl {
-    constructor(max) {
-        this.max = max
-        this.fnGroup = []
-    }
-    emit(data) {
-        if (this.fnGroup.length < this.max) {
-            data.fn.apply(null, data.args)
-            return
-        }
-        this.fnGroup.push(data) // 修改
-    }
-    shift() {
-        if (this.fnGroup.length === 0) {
-            return
-        }
-        let data = this.fnGroup.shift()
-        data.fn.apply(null, data.args)
-    }
-}
-let middleControl = new RequestControl(5)
 
 
 
 
-function walkDir(dir, callback, prefix = '') {
-    fs.readdir(dir, (err, files) => {
-        files.forEach(file => {
-            let filePath = path.join(dir, file)
-            let newName = path.join(prefix, file)
-            fs.stat(filePath, (err, stat) => {
-                // 如果是文件夹
-                if (stat.isDirectory()) {
-                    walkDir(filePath, callback, newName)
-                    return
-                }
-                filePath = path.normalize(filePath).replace(/\\/g, '/')
-                newName = path.normalize(newName).replace(/\\/g, '/')
-                let args = [filePath, newName]
-                middleControl.emit({
-                    fn: callback,
-                    args
-                })
-            })
-        })
-    })
-}
 
 
 function isExist(path) {
@@ -162,22 +104,8 @@ function isExist(path) {
     return isExist
 }
 
-// 文件上传
-function uploadFile(localFilePath, name) {
-    formUploader.putFile(uploadToken, name, localFilePath, putExtra, function(respErr,
-        respBody, respInfo) {
-        middleControl.shift()
-        if (respErr) {
-            throw respErr;
-        }
-        if (respInfo.statusCode == 200) {
-            console.log(respBody);
-        } else {
-            console.log(respInfo.statusCode);
-            console.log(respBody);
-        }
-    });
-}
 
-// startSync()
-getItems({ prefix: 'node_modules/', limit: 1000 }, deleteFile)
+// console.log(__dirname)
+const startSync = require('./src/syncFiles.js')
+startSync()
+// getItems({ prefix: 'node_modules/', limit: 1000 }, deleteFile)
