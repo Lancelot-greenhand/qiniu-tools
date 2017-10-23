@@ -94,15 +94,6 @@ function getItems({ prefix, limit }, callback) {
 
 
 
-function isExist(path) {
-    let isExist = true
-    try {
-        fs.statSync(path)
-    } catch (err) {
-        isExist = false
-    }
-    return isExist
-}
 
 
 // console.log(__dirname)
