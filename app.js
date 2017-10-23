@@ -1,11 +1,13 @@
 const fs = require('fs')
 const path = require('path')
 const qiniu = require('qiniu')
-const root = 'e:/testdocs'
-var accessKey = 'UFBLTy8tc_f_L0KxkuUuQTayBMl73SDpo80ZwYWe';
-var secretKey = '8TWK6szB3_Bln3nsasl0HABei12a4UMvy5CyI8tf';
+const RequestControl = require('./utils/RequestControl.js')
+const config = require('./config')
+const root = config.root
+const accessKey = config.accessKey
+const secretKey = config.secretKey
 var mac = new qiniu.auth.digest.Mac(accessKey, secretKey);
-var bucket = 'limg'
+const bucket = config.bucket
 var options = {
     scope: bucket,
 };
@@ -23,8 +25,8 @@ var bucketManager = new qiniu.rs.BucketManager(mac, config);
 
 
 //同步root文件夹的文件
-function startSync() {
-    walkDir(root, uploadFile)
+function startSync(root, prefix) {
+    walkDir(root, uploadFile, prefix)
 }
 
 function deleteFile(item) {
@@ -102,33 +104,10 @@ function getItems({ prefix, limit }, callback) {
     });
 }
 
-
-class RequestControl {
-    constructor(max) {
-        this.max = max
-        this.fnGroup = []
-    }
-    emit(data) {
-        if (this.fnGroup.length < this.max) {
-            data.fn.apply(null, data.args)
-            return
-        }
-        this.fnGroup.push(data) // 修改
-    }
-    shift() {
-        if (this.fnGroup.length === 0) {
-            return
-        }
-        let data = this.fnGroup.shift()
-        data.fn.apply(null, data.args)
-    }
-}
 let middleControl = new RequestControl(5)
 
 
-
-
-function walkDir(dir, callback, prefix = '') {
+function walkDir(dir, callback, prefix = 'phdi') {
     fs.readdir(dir, (err, files) => {
         files.forEach(file => {
             let filePath = path.join(dir, file)
@@ -152,15 +131,6 @@ function walkDir(dir, callback, prefix = '') {
 }
 
 
-function isExist(path) {
-    let isExist = true
-    try {
-        fs.statSync(path)
-    } catch (err) {
-        isExist = false
-    }
-    return isExist
-}
 
 // 文件上传
 function uploadFile(localFilePath, name) {
@@ -179,5 +149,7 @@ function uploadFile(localFilePath, name) {
     });
 }
 
-// startSync()
-getItems({ prefix: 'node_modules/', limit: 1000 }, deleteFile)
+// startSync(root, 'phdi')
+console.log(process.argv)
+
+// getItems({ prefix: 'node_modules/', limit: 1000 }, deleteFile)
