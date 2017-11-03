@@ -20,7 +20,7 @@ var putExtra = new qiniu.form_up.PutExtra();
 
 const RequestControl = require('../utils/RequestControl.js')
 let middleControl = new RequestControl(5)
-//同步root文件夹的文件
+    //同步root文件夹的文件
 function startSync() {
     walkDir(root, uploadFile)
 }
@@ -36,6 +36,7 @@ function walkDir(dir, callback, prefix = '') {
                     walkDir(filePath, callback, newName)
                     return
                 }
+
                 filePath = path.normalize(filePath).replace(/\\/g, '/')
                 newName = path.normalize(newName).replace(/\\/g, '/')
                 let args = [filePath, newName]
